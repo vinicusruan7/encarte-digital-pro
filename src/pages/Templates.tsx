@@ -1,11 +1,13 @@
 
 import React, { useState } from 'react';
 import AppLayout from '@/components/layout/AppLayout';
-import { Plus, Filter, Search, ChevronRight } from 'lucide-react';
+import { Plus, Filter, Search, ChevronRight, Image, EyeOff, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { SearchInput } from '@/components/ui/search-input';
+import { Toggle } from '@/components/ui/toggle';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 // Tipos
 interface Template {
@@ -103,6 +105,7 @@ const templateCategories = [
 const Templates = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [showProductImages, setShowProductImages] = useState(true);
   
   // Obter todas as categorias únicas de todos os templates para filtros
   const allCategories = Array.from(new Set(
@@ -135,6 +138,11 @@ const Templates = () => {
     };
     
     return imageMapping[categoryId] || null;
+  };
+
+  // Toggle para mostrar/ocultar imagens de produtos
+  const toggleProductImages = () => {
+    setShowProductImages(!showProductImages);
   };
 
   return (
@@ -190,6 +198,36 @@ const Templates = () => {
                 {category}
               </button>
             ))}
+            
+            {/* Botão para ativar/desativar imagens de produtos */}
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Toggle 
+                    pressed={showProductImages} 
+                    onPressedChange={toggleProductImages}
+                    className="ml-2 px-3 py-1"
+                    aria-label={showProductImages ? "Ocultar imagens de produtos" : "Mostrar imagens de produtos"}
+                  >
+                    {showProductImages ? (
+                      <EyeOff size={16} className="mr-1" />
+                    ) : (
+                      <Eye size={16} className="mr-1" />
+                    )}
+                    <span className="text-sm">
+                      {showProductImages ? "Ocultar imagens" : "Mostrar imagens"}
+                    </span>
+                  </Toggle>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>
+                    {showProductImages 
+                      ? "Ocultar imagens de produtos nos templates" 
+                      : "Mostrar imagens de produtos nos templates"}
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </div>
 
@@ -245,17 +283,19 @@ const Templates = () => {
                             <div className="absolute inset-0 flex items-center p-4">
                               {/* Template específico baseado na imagem */}
                               <div className="flex items-center gap-4 w-full">
-                                {/* Pessoa na imagem */}
-                                <div className="flex-shrink-0 w-1/3">
-                                  <img 
-                                    src={template.thumbnail} 
-                                    alt=""
-                                    className="w-full h-full object-cover rounded"
-                                  />
-                                </div>
+                                {/* Pessoa na imagem - agora condicional */}
+                                {showProductImages && (
+                                  <div className="flex-shrink-0 w-1/3">
+                                    <img 
+                                      src={template.thumbnail} 
+                                      alt=""
+                                      className="w-full h-full object-cover rounded"
+                                    />
+                                  </div>
+                                )}
                                 
                                 {/* Texto do template */}
-                                <div className={`flex-grow ${style.textColor} font-bold`}>
+                                <div className={`flex-grow ${style.textColor} font-bold ${!showProductImages ? 'ml-4' : ''}`}>
                                   <h3 className="text-2xl uppercase drop-shadow-md">
                                     {template.name.split(' ')[0]}
                                   </h3>
