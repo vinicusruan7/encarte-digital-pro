@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Toggle } from '@/components/ui/toggle';
 import {
   Dialog,
   DialogContent,
@@ -17,20 +16,42 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { createMercadoPagoCheckout } from '@/services/mercadoPago';
 
 const Planos = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [faturamento, setFaturamento] = useState<'mensal' | 'anual'>('mensal');
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   
-  const handleAssinar = (plano: string) => {
-    // Aqui seria a integração com sistema de pagamento
-    toast({
-      title: `Plano ${plano} selecionado`,
-      description: "Implementação de pagamento será necessária.",
-    });
-    setShowUpgradeDialog(true);
+  const handleAssinar = async (plano: string, preco: number) => {
+    setIsLoading(true);
+    try {
+      // Chamar a função para criar um checkout do Mercado Pago
+      const checkoutUrl = await createMercadoPagoCheckout({
+        plan: plano,
+        period: faturamento,
+        amount: preco
+      });
+      
+      // Redirecionar o usuário para a URL de checkout do Mercado Pago
+      if (checkoutUrl) {
+        window.location.href = checkoutUrl;
+      } else {
+        throw new Error('Não foi possível criar o checkout');
+      }
+    } catch (error) {
+      console.error('Erro ao processar pagamento:', error);
+      toast({
+        title: 'Erro ao processar pagamento',
+        description: 'Ocorreu um erro ao tentar processar seu pagamento. Tente novamente mais tarde.',
+        variant: 'destructive'
+      });
+      setShowUpgradeDialog(true);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const Feature = ({ available, text }: { available: boolean; text: string }) => (
@@ -211,9 +232,10 @@ const Planos = () => {
                 <Button
                   className="w-full mt-4 py-6"
                   variant={plano.popular ? "default" : "outline"}
-                  onClick={() => handleAssinar(plano.nome)}
+                  onClick={() => handleAssinar(plano.nome, plano.preco)}
+                  disabled={isLoading}
                 >
-                  Assinar
+                  {isLoading ? 'Processando...' : 'Assinar com Mercado Pago'}
                 </Button>
               </CardFooter>
             </Card>

@@ -1,25 +1,16 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Settings, 
-  User, 
-  Store, 
-  CreditCard, 
-  Bell, 
-  Shield, 
-  Save,
-  Crown
-} from 'lucide-react';
 import AppLayout from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
+import { Check, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const Configuracoes = () => {
@@ -27,331 +18,308 @@ const Configuracoes = () => {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('conta');
   
-  const handleSave = () => {
+  const handleSaveGeneralSettings = () => {
     toast({
       title: "Configurações salvas",
-      description: "Suas configurações foram salvas com sucesso.",
+      description: "Suas configurações gerais foram atualizadas com sucesso.",
     });
   };
-
-  // Simular plano atual do usuário
-  const planoAtual = {
-    nome: 'Business',
-    dataRenovacao: '15/05/2025',
-    valor: 'R$ 69,90/mês'
+  
+  const handleChangePassword = () => {
+    toast({
+      title: "Senha atualizada",
+      description: "Sua senha foi alterada com sucesso.",
+    });
+  };
+  
+  const handleSaveNotifications = () => {
+    toast({
+      title: "Preferências de notificação atualizadas",
+      description: "Suas preferências de notificação foram atualizadas com sucesso.",
+    });
   };
 
   return (
     <AppLayout>
       <div className="flex flex-col gap-6">
         <div>
-          <h1 className="text-2xl font-heading font-bold flex items-center gap-2">
-            <Settings className="h-6 w-6" /> Configurações
-          </h1>
-          <p className="text-muted-foreground">Gerencie as configurações da sua conta e aplicação</p>
+          <h1 className="text-3xl font-heading font-bold">Configurações</h1>
+          <p className="text-muted-foreground">
+            Gerencie suas configurações de conta e preferências.
+          </p>
         </div>
         
         <Tabs defaultValue="conta" value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-2 md:grid-cols-6 mb-6">
-            <TabsTrigger value="conta" className="flex items-center gap-2">
-              <User className="h-4 w-4" /> Conta
+          <TabsList className="mb-8">
+            <TabsTrigger value="conta">Conta</TabsTrigger>
+            <TabsTrigger value="perfil">Perfil</TabsTrigger>
+            <TabsTrigger value="assinatura">
+              Assinatura
+              <Badge variant="secondary" className="ml-2">Pro</Badge>
             </TabsTrigger>
-            <TabsTrigger value="loja" className="flex items-center gap-2">
-              <Store className="h-4 w-4" /> Loja
-            </TabsTrigger>
-            <TabsTrigger value="pagamentos" className="flex items-center gap-2">
-              <CreditCard className="h-4 w-4" /> Pagamentos
-            </TabsTrigger>
-            <TabsTrigger value="assinatura" className="flex items-center gap-2">
-              <Crown className="h-4 w-4" /> Assinatura
-            </TabsTrigger>
-            <TabsTrigger value="notificacoes" className="flex items-center gap-2">
-              <Bell className="h-4 w-4" /> Notificações
-            </TabsTrigger>
-            <TabsTrigger value="seguranca" className="flex items-center gap-2">
-              <Shield className="h-4 w-4" /> Segurança
-            </TabsTrigger>
+            <TabsTrigger value="notificacoes">Notificações</TabsTrigger>
+            <TabsTrigger value="api">API</TabsTrigger>
           </TabsList>
-
-          <TabsContent value="conta">
-            <Card>
-              <CardHeader>
-                <CardTitle>Informações da Conta</CardTitle>
-                <CardDescription>
-                  Atualize suas informações pessoais e credenciais de acesso
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="nome">Nome</Label>
-                    <Input id="nome" placeholder="João Silva" defaultValue="João Silva" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" placeholder="joao@exemplo.com" defaultValue="joao@exemplo.com" />
-                  </div>
+          
+          {/* Conta */}
+          <TabsContent value="conta" className="space-y-6">
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold">Informações Gerais</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input id="email" type="email" value="seu@email.com" readOnly />
+                  <p className="text-sm text-muted-foreground">Seu email de login não pode ser alterado.</p>
                 </div>
-                
-                <Separator className="my-4" />
-                
+                <div className="space-y-2">
+                  <Label htmlFor="nome">Nome</Label>
+                  <Input id="nome" placeholder="Seu nome" />
+                </div>
+              </div>
+            </div>
+            
+            <Separator />
+            
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold">Alterar Senha</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="senha-atual">Senha Atual</Label>
-                  <Input id="senha-atual" type="password" placeholder="Digite sua senha atual" />
+                  <Input id="senha-atual" type="password" />
                 </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="nova-senha">Nova Senha</Label>
-                    <Input id="nova-senha" type="password" placeholder="Digite sua nova senha" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="confirmar-senha">Confirmar Nova Senha</Label>
-                    <Input id="confirmar-senha" type="password" placeholder="Confirme sua nova senha" />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="nova-senha">Nova Senha</Label>
+                  <Input id="nova-senha" type="password" />
                 </div>
-                
-                <div className="flex justify-end mt-4">
-                  <Button onClick={handleSave}>
-                    <Save className="mr-2 h-4 w-4" /> Salvar Alterações
+                <div className="space-y-2">
+                  <Label htmlFor="confirmar-senha">Confirmar Nova Senha</Label>
+                  <Input id="confirmar-senha" type="password" />
+                </div>
+              </div>
+              <Button variant="outline" onClick={handleChangePassword}>Alterar Senha</Button>
+            </div>
+            
+            <Separator />
+            
+            <div className="flex justify-between">
+              <Button variant="outline" onClick={handleSaveGeneralSettings}>Salvar Alterações</Button>
+              <Button variant="destructive">Excluir Conta</Button>
+            </div>
+          </TabsContent>
+          
+          {/* Perfil */}
+          <TabsContent value="perfil" className="space-y-6">
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold">Informações do Perfil</h2>
+              <div className="grid grid-cols-1 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="nome-empresa">Nome da Empresa</Label>
+                  <Input id="nome-empresa" placeholder="Nome da sua empresa" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="site">Site</Label>
+                  <Input id="site" type="url" placeholder="https://seusite.com" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="descricao">Descrição</Label>
+                  <Textarea id="descricao" placeholder="Descreva brevemente a sua empresa..." />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="telefone">Telefone</Label>
+                  <Input id="telefone" placeholder="(XX) XXXXX-XXXX" />
+                </div>
+              </div>
+              <Button>Salvar Informações do Perfil</Button>
+            </div>
+          </TabsContent>
+          
+          {/* Assinatura */}
+          <TabsContent value="assinatura" className="space-y-6">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold">Seu Plano</h2>
+                  <p className="text-muted-foreground">Gerencie sua assinatura</p>
+                </div>
+                <Badge variant="outline" className="bg-green-50 text-green-700 hover:bg-green-50">Ativo</Badge>
+              </div>
+              
+              <div className="border rounded-lg p-6 bg-card">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="text-lg font-semibold">Plano Pro</h3>
+                    <p className="text-muted-foreground">Faturamento mensal - R$99/mês</p>
+                  </div>
+                  <Button variant="outline" onClick={() => navigate('/planos')}>
+                    Alterar Plano
                   </Button>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="loja">
-            <Card>
-              <CardHeader>
-                <CardTitle>Configurações da Loja</CardTitle>
-                <CardDescription>
-                  Personalize as informações da sua loja
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="nome-loja">Nome da Loja</Label>
-                  <Input id="nome-loja" placeholder="Minha Loja" defaultValue="Supermercado Economia" />
-                </div>
                 
-                <div className="space-y-2">
-                  <Label htmlFor="descricao-loja">Descrição</Label>
-                  <Input id="descricao-loja" placeholder="Uma breve descrição da sua loja" defaultValue="Os melhores preços da cidade" />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="endereco-loja">Endereço</Label>
-                  <Input id="endereco-loja" placeholder="Rua, Número, Cidade" defaultValue="Av. Principal, 123 - Centro" />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="telefone-loja">Telefone</Label>
-                  <Input id="telefone-loja" placeholder="(99) 9999-9999" defaultValue="(11) 9999-9999" />
-                </div>
-                
-                <div className="flex justify-end mt-4">
-                  <Button onClick={handleSave}>
-                    <Save className="mr-2 h-4 w-4" /> Salvar Alterações
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="pagamentos">
-            <Card>
-              <CardHeader>
-                <CardTitle>Informações de Pagamento</CardTitle>
-                <CardDescription>
-                  Gerencie suas formas de pagamento e assinatura
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground mb-4">Você está no plano Premium - R$ 49,90/mês</p>
-                <p className="font-medium">Próxima cobrança: 15/05/2025</p>
                 <Separator className="my-4" />
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="bg-muted p-2 rounded">
-                        <CreditCard className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <p className="font-medium">Mastercard final 4589</p>
-                        <p className="text-sm text-muted-foreground">Expira em 12/28</p>
-                      </div>
-                    </div>
-                    <Button variant="outline" size="sm">Alterar</Button>
-                  </div>
-                </div>
-                <Separator className="my-4" />
-                <div className="flex justify-end mt-4">
-                  <Button onClick={handleSave}>
-                    <Save className="mr-2 h-4 w-4" /> Salvar Alterações
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="assinatura">
-            <Card>
-              <CardHeader>
-                <CardTitle>Gerenciar Assinatura</CardTitle>
-                <CardDescription>
-                  Visualize e altere seu plano atual
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="mb-6 bg-muted/40 p-6 rounded-lg border">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="bg-emerald-100 p-2 rounded-full">
-                      <Crown className="h-6 w-6 text-emerald-600" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-medium">Seu plano atual: {planoAtual.nome}</h3>
-                      <p className="text-sm text-muted-foreground">Renovação automática em {planoAtual.dataRenovacao}</p>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm font-medium">Valor</p>
-                      <p className="text-2xl font-bold">{planoAtual.valor}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">Status</p>
-                      <Badge variant="success" className="mt-1 bg-emerald-100 text-emerald-700 hover:bg-emerald-200">Ativo</Badge>
-                    </div>
-                  </div>
-                </div>
-
-                <h3 className="font-medium text-lg mb-3">Recursos do seu plano</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 mb-6">
-                  <div className="flex items-center gap-2">
-                    <Check className="h-4 w-4 text-emerald-500" />
+                
+                <h4 className="font-semibold mb-2">Recursos incluídos:</h4>
+                <ul className="space-y-2">
+                  <li className="flex items-center">
+                    <Check className="mr-2 h-4 w-4 text-green-600" />
                     <span>Baixar encartes</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Check className="h-4 w-4 text-emerald-500" />
+                  </li>
+                  <li className="flex items-center">
+                    <Check className="mr-2 h-4 w-4 text-green-600" />
                     <span>Logomarcas</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Check className="h-4 w-4 text-emerald-500" />
+                  </li>
+                  <li className="flex items-center">
+                    <Check className="mr-2 h-4 w-4 text-green-600" />
                     <span>Baixar cartazes</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Check className="h-4 w-4 text-emerald-500" />
-                    <span>Baixar vídeos (em produção)</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Check className="h-4 w-4 text-emerald-500" />
+                  </li>
+                  <li className="flex items-center">
+                    <Check className="mr-2 h-4 w-4 text-green-600" />
+                    <span>Baixar vídeos</span>
+                  </li>
+                  <li className="flex items-center">
+                    <Check className="mr-2 h-4 w-4 text-green-600" />
                     <span>Remover fundos</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Check className="h-4 w-4 text-emerald-500" />
+                  </li>
+                  <li className="flex items-center">
+                    <Check className="mr-2 h-4 w-4 text-green-600" />
                     <span>Acesso a formatos premium</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Check className="h-4 w-4 text-emerald-500" />
+                  </li>
+                  <li className="flex items-center">
+                    <Check className="mr-2 h-4 w-4 text-green-600" />
                     <span>Editar produtos</span>
+                  </li>
+                  <li className="flex items-center">
+                    <X className="mr-2 h-4 w-4 text-red-600" />
+                    <span className="text-muted-foreground">Suporte prioritário</span>
+                  </li>
+                </ul>
+                
+                <Separator className="my-4" />
+                
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h4 className="font-medium">Próximo pagamento</h4>
+                    <p className="text-muted-foreground">24 de maio de 2023</p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <X className="h-4 w-4 text-red-500" />
-                    <span className="text-muted-foreground">Editar cabeçalho</span>
-                  </div>
+                  <Button variant="destructive" size="sm">Cancelar assinatura</Button>
                 </div>
-
-                <div className="flex flex-col sm:flex-row gap-3 justify-end">
-                  <Button variant="outline" onClick={() => navigate('/planos')}>Ver todos os planos</Button>
-                  <Button onClick={() => navigate('/planos')}>Mudar de plano</Button>
-                </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
+            
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold">Histórico de Pagamentos</h2>
+              <div className="border rounded-lg overflow-hidden">
+                <table className="w-full">
+                  <thead className="bg-muted/50">
+                    <tr>
+                      <th className="py-3 px-4 text-left font-medium">Data</th>
+                      <th className="py-3 px-4 text-left font-medium">Valor</th>
+                      <th className="py-3 px-4 text-left font-medium">Status</th>
+                      <th className="py-3 px-4 text-left font-medium">Recibo</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-t">
+                      <td className="py-3 px-4">24/04/2023</td>
+                      <td className="py-3 px-4">R$99,00</td>
+                      <td className="py-3 px-4">
+                        <Badge variant="outline" className="bg-green-50 text-green-700">Pago</Badge>
+                      </td>
+                      <td className="py-3 px-4">
+                        <Button variant="link" className="p-0 h-auto">Ver recibo</Button>
+                      </td>
+                    </tr>
+                    <tr className="border-t">
+                      <td className="py-3 px-4">24/03/2023</td>
+                      <td className="py-3 px-4">R$99,00</td>
+                      <td className="py-3 px-4">
+                        <Badge variant="outline" className="bg-green-50 text-green-700">Pago</Badge>
+                      </td>
+                      <td className="py-3 px-4">
+                        <Button variant="link" className="p-0 h-auto">Ver recibo</Button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </TabsContent>
-
-          <TabsContent value="notificacoes">
-            <Card>
-              <CardHeader>
-                <CardTitle>Preferências de Notificação</CardTitle>
-                <CardDescription>
-                  Defina quais notificações você deseja receber
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
+          
+          {/* Notificações */}
+          <TabsContent value="notificacoes" className="space-y-6">
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold">Preferências de Email</h2>
+              <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium">Notificações por email</p>
-                    <p className="text-sm text-muted-foreground">Receba atualizações sobre sua conta</p>
+                    <Label htmlFor="marketing" className="font-medium">Emails de Marketing</Label>
+                    <p className="text-sm text-muted-foreground">Receba ofertas especiais e novidades.</p>
                   </div>
-                  <Switch defaultChecked id="email-notifs" />
+                  <Switch id="marketing" />
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium">Atualizações de produtos</p>
-                    <p className="text-sm text-muted-foreground">Receba notificações sobre novos recursos</p>
+                    <Label htmlFor="atualizacoes" className="font-medium">Atualizações do Produto</Label>
+                    <p className="text-sm text-muted-foreground">Saiba sobre novas funcionalidades.</p>
                   </div>
-                  <Switch defaultChecked id="product-notifs" />
+                  <Switch id="atualizacoes" defaultChecked />
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium">Newsletter</p>
-                    <p className="text-sm text-muted-foreground">Receba nossa newsletter mensal</p>
+                    <Label htmlFor="seguranca" className="font-medium">Alertas de Segurança</Label>
+                    <p className="text-sm text-muted-foreground">Informações importantes sobre sua conta.</p>
                   </div>
-                  <Switch id="newsletter-notifs" />
+                  <Switch id="seguranca" defaultChecked />
                 </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">Ofertas e promoções</p>
-                    <p className="text-sm text-muted-foreground">Receba ofertas especiais e promoções</p>
-                  </div>
-                  <Switch defaultChecked id="promo-notifs" />
-                </div>
-                <div className="flex justify-end mt-4">
-                  <Button onClick={handleSave}>
-                    <Save className="mr-2 h-4 w-4" /> Salvar Alterações
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+              </div>
+              <Button onClick={handleSaveNotifications}>Salvar Preferências</Button>
+            </div>
           </TabsContent>
-
-          <TabsContent value="seguranca">
-            <Card>
-              <CardHeader>
-                <CardTitle>Segurança da Conta</CardTitle>
-                <CardDescription>
-                  Proteja sua conta com opções de segurança adicionais
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex items-center justify-between">
+          
+          {/* API */}
+          <TabsContent value="api" className="space-y-6">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold">Chaves de API</h2>
+                  <p className="text-muted-foreground">Gerencie suas integrações.</p>
+                </div>
+                <Button>Gerar Nova Chave</Button>
+              </div>
+              
+              <div className="border rounded-lg p-6 bg-card">
+                <div className="flex justify-between items-center">
                   <div>
-                    <p className="font-medium">Autenticação de dois fatores</p>
-                    <p className="text-sm text-muted-foreground">Adicione uma camada extra de segurança</p>
+                    <h3 className="text-lg font-semibold">Chave de Produção</h3>
+                    <p className="text-muted-foreground">Use para integrações em produção.</p>
                   </div>
-                  <Switch id="2fa" />
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm">Mostrar</Button>
+                    <Button variant="outline" size="sm">Copiar</Button>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between">
+              </div>
+              
+              <div className="border rounded-lg p-6 bg-card">
+                <div className="flex justify-between items-center">
                   <div>
-                    <p className="font-medium">Notificações de login</p>
-                    <p className="text-sm text-muted-foreground">Receba alertas sobre novos logins</p>
+                    <h3 className="text-lg font-semibold">Chave de Teste</h3>
+                    <p className="text-muted-foreground">Use para testes de integração.</p>
                   </div>
-                  <Switch defaultChecked id="login-alerts" />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">Dispositivos conectados</p>
-                    <p className="text-sm text-muted-foreground">Gerencie dispositivos que acessam sua conta</p>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm">Mostrar</Button>
+                    <Button variant="outline" size="sm">Copiar</Button>
                   </div>
-                  <Button variant="outline" size="sm">Gerenciar</Button>
                 </div>
-                <div className="flex justify-end mt-4">
-                  <Button onClick={handleSave}>
-                    <Save className="mr-2 h-4 w-4" /> Salvar Alterações
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+              </div>
+              
+              <div className="bg-muted p-4 rounded">
+                <h4 className="font-medium">Webhooks</h4>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Configure webhooks para receber notificações em tempo real.
+                </p>
+                <Button variant="outline" size="sm">Configurar Webhooks</Button>
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
       </div>

@@ -4,7 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, createContext } from "react";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
@@ -18,16 +18,49 @@ import Encartes from "./pages/Encartes";
 import Configuracoes from "./pages/Configuracoes";
 import Planos from "./pages/Planos";
 import NotFound from "./pages/NotFound";
+import PaymentSuccess from "./pages/PaymentSuccess";
+import PaymentCancel from "./pages/PaymentCancel";
 
 const queryClient = new QueryClient();
 
+// Contexto para gerenciar informações de assinatura
+export const SubscriptionContext = createContext<{
+  isSubscribed: boolean;
+  plan: string | null;
+  expiresAt: Date | null;
+  refreshSubscription: () => void;
+}>({
+  isSubscribed: false,
+  plan: null,
+  expiresAt: null,
+  refreshSubscription: () => {}
+});
+
 const App = () => {
   const [isLoading, setIsLoading] = useState(true);
+  const [subscriptionState, setSubscriptionState] = useState({
+    isSubscribed: false,
+    plan: null,
+    expiresAt: null
+  });
+
+  // Função para atualizar informações de assinatura
+  const refreshSubscription = () => {
+    // Aqui você chamaria a API para verificar o status da assinatura
+    // Por enquanto, vamos apenas simular que o usuário está inscrito
+    setSubscriptionState({
+      isSubscribed: true,
+      plan: "Business",
+      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 dias a partir de hoje
+    });
+  };
 
   // Simulação de carregamento inicial
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false);
+      // Verificar assinatura ao iniciar
+      refreshSubscription();
     }, 1000);
     return () => clearTimeout(timer);
   }, []);
@@ -52,27 +85,34 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Login />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/templates" element={<Templates />} />
-            <Route path="/templates/:id" element={<TemplateDetails />} />
-            <Route path="/templates/novo" element={<NovoTemplate />} />
-            <Route path="/templates/edit/:id" element={<NovoTemplate />} />
-            <Route path="/produtos" element={<Produtos />} />
-            <Route path="/encartes/novo" element={<NovoEncarte />} />
-            <Route path="/imagens" element={<BancoImagens />} />
-            <Route path="/encartes" element={<Encartes />} />
-            <Route path="/configuracoes" element={<Configuracoes />} />
-            <Route path="/planos" element={<Planos />} />
-            {/* Rota de fallback */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
+        <SubscriptionContext.Provider value={{
+          ...subscriptionState,
+          refreshSubscription
+        }}>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Login />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/templates" element={<Templates />} />
+              <Route path="/templates/:id" element={<TemplateDetails />} />
+              <Route path="/templates/novo" element={<NovoTemplate />} />
+              <Route path="/templates/edit/:id" element={<NovoTemplate />} />
+              <Route path="/produtos" element={<Produtos />} />
+              <Route path="/encartes/novo" element={<NovoEncarte />} />
+              <Route path="/imagens" element={<BancoImagens />} />
+              <Route path="/encartes" element={<Encartes />} />
+              <Route path="/configuracoes" element={<Configuracoes />} />
+              <Route path="/planos" element={<Planos />} />
+              <Route path="/success" element={<PaymentSuccess />} />
+              <Route path="/cancel" element={<PaymentCancel />} />
+              {/* Rota de fallback */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </SubscriptionContext.Provider>
       </TooltipProvider>
     </QueryClientProvider>
   );
