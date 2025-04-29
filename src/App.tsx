@@ -9,6 +9,8 @@ import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Templates from "./pages/Templates";
+import TemplateDetails from "./pages/TemplateDetails";
+import NovoTemplate from "./pages/NovoTemplate";
 import Produtos from "./pages/Produtos";
 import NovoEncarte from "./pages/NovoEncarte";
 import NotFound from "./pages/NotFound";
@@ -54,6 +56,8 @@ const App = () => {
             <Route path="/login" element={<Login />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/templates" element={<Templates />} />
+            <Route path="/templates/:id" element={<TemplateDetails />} />
+            <Route path="/templates/novo" element={<NovoTemplate />} />
             <Route path="/produtos" element={<Produtos />} />
             <Route path="/encartes/novo" element={<NovoEncarte />} />
             {/* Rotas adicionais para outras funcionalidades */}
