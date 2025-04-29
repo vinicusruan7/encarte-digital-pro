@@ -159,12 +159,26 @@ const NovoEncarte = () => {
     });
     
     try {
-      // Captura o conteúdo do encarte como uma imagem
+      // Captura o conteúdo do encarte como uma imagem com configurações melhoradas
       const canvas = await html2canvas(previewRef.current, {
         scale: 2, // Aumenta a qualidade
         useCORS: true, // Permitir imagens de outras origens
         logging: false,
-        allowTaint: true
+        allowTaint: true,
+        scrollY: -window.scrollY, // Ajuda a capturar o conteúdo completo
+        height: previewRef.current.scrollHeight, // Garante captura da altura total
+        windowHeight: previewRef.current.scrollHeight, // Altura da janela para captura
+        onclone: (clonedDoc) => {
+          // Garante que o elemento clonado seja visível para captura completa
+          const clonedElement = clonedDoc.querySelector('[data-preview-clone]');
+          if (clonedElement) {
+            clonedElement.style.height = 'auto';
+            clonedElement.style.overflow = 'visible';
+            clonedElement.style.position = 'absolute';
+            clonedElement.style.top = '0';
+            clonedElement.style.left = '0';
+          }
+        }
       });
       
       // Calcula as dimensões para o PDF (A4)
@@ -174,7 +188,22 @@ const NovoEncarte = () => {
       
       // Cria o documento PDF
       const pdf = new jsPDF('p', 'mm', 'a4');
-      pdf.addImage(canvas.toDataURL('image/jpeg', 0.9), 'JPEG', 0, 0, imgWidth, imgHeight);
+      
+      // Gerencia conteúdo por páginas, se necessário
+      let heightLeft = imgHeight;
+      let position = 0;
+      
+      // Adiciona a primeira página
+      pdf.addImage(canvas.toDataURL('image/jpeg', 1.0), 'JPEG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+      
+      // Adiciona páginas adicionais se o conteúdo for maior que uma página
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(canvas.toDataURL('image/jpeg', 1.0), 'JPEG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
       
       // Baixa o PDF
       pdf.save(`${encarteTitle.replace(/\s+/g, '_')}.pdf`);
@@ -198,7 +227,9 @@ const NovoEncarte = () => {
     return (
       <div 
         ref={isPreview ? previewRef : null}
+        data-preview-clone={isPreview ? "true" : undefined}
         className={`border ${showCells && !isPreview ? 'bg-gray-50 dark:bg-gray-800' : 'bg-white dark:bg-gray-900'} rounded-lg overflow-hidden`}
+        style={isPreview ? { maxHeight: 'none', overflow: 'visible' } : {}}
       >
         {/* Cabeçalho do Encarte */}
         <div className="bg-primary-500 text-white p-4">
