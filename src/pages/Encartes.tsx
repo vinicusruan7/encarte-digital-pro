@@ -33,6 +33,15 @@ const Encartes = () => {
     encarte.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Helper function to get the appropriate badge variant
+  const getBadgeVariant = (status) => {
+    switch(status) {
+      case 'Publicado': return 'default';
+      case 'Agendado': return 'secondary';
+      default: return 'outline';
+    }
+  };
+
   return (
     <AppLayout>
       <div className="flex flex-col gap-6">
@@ -96,10 +105,7 @@ const Encartes = () => {
                         <div className="font-medium truncate">{encarte.title}</div>
                       </div>
                       <div className="col-span-2 hidden sm:block">
-                        <Badge variant={
-                          encarte.status === 'Publicado' ? 'success' : 
-                          encarte.status === 'Agendado' ? 'warning' : 'outline'
-                        }>
+                        <Badge variant={getBadgeVariant(encarte.status)}>
                           {encarte.status}
                         </Badge>
                       </div>

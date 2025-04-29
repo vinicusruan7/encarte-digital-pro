@@ -15,6 +15,7 @@ import Produtos from "./pages/Produtos";
 import NovoEncarte from "./pages/NovoEncarte";
 import BancoImagens from "./pages/BancoImagens";
 import Encartes from "./pages/Encartes";
+import Configuracoes from "./pages/Configuracoes";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -64,9 +65,9 @@ const App = () => {
             <Route path="/produtos" element={<Produtos />} />
             <Route path="/encartes/novo" element={<NovoEncarte />} />
             <Route path="/imagens" element={<BancoImagens />} />
-            {/* Updated route to use the Encartes component */}
             <Route path="/encartes" element={<Encartes />} />
-            <Route path="/configuracoes" element={<NotFound />} />
+            {/* Updated route to use the new Configuracoes component */}
+            <Route path="/configuracoes" element={<Configuracoes />} />
             {/* Rota de fallback */}
             <Route path="*" element={<NotFound />} />
           </Routes>
