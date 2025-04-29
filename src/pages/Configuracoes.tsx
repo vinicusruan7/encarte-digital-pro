@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Settings, 
   User, 
@@ -7,7 +8,8 @@ import {
   CreditCard, 
   Bell, 
   Shield, 
-  Save
+  Save,
+  Crown
 } from 'lucide-react';
 import AppLayout from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
@@ -17,9 +19,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 
 const Configuracoes = () => {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('conta');
   
@@ -28,6 +32,13 @@ const Configuracoes = () => {
       title: "Configurações salvas",
       description: "Suas configurações foram salvas com sucesso.",
     });
+  };
+
+  // Simular plano atual do usuário
+  const planoAtual = {
+    nome: 'Business',
+    dataRenovacao: '15/05/2025',
+    valor: 'R$ 69,90/mês'
   };
 
   return (
@@ -41,7 +52,7 @@ const Configuracoes = () => {
         </div>
         
         <Tabs defaultValue="conta" value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-2 md:grid-cols-5 mb-6">
+          <TabsList className="grid grid-cols-2 md:grid-cols-6 mb-6">
             <TabsTrigger value="conta" className="flex items-center gap-2">
               <User className="h-4 w-4" /> Conta
             </TabsTrigger>
@@ -50,6 +61,9 @@ const Configuracoes = () => {
             </TabsTrigger>
             <TabsTrigger value="pagamentos" className="flex items-center gap-2">
               <CreditCard className="h-4 w-4" /> Pagamentos
+            </TabsTrigger>
+            <TabsTrigger value="assinatura" className="flex items-center gap-2">
+              <Crown className="h-4 w-4" /> Assinatura
             </TabsTrigger>
             <TabsTrigger value="notificacoes" className="flex items-center gap-2">
               <Bell className="h-4 w-4" /> Notificações
@@ -175,6 +189,81 @@ const Configuracoes = () => {
                   <Button onClick={handleSave}>
                     <Save className="mr-2 h-4 w-4" /> Salvar Alterações
                   </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="assinatura">
+            <Card>
+              <CardHeader>
+                <CardTitle>Gerenciar Assinatura</CardTitle>
+                <CardDescription>
+                  Visualize e altere seu plano atual
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="mb-6 bg-muted/40 p-6 rounded-lg border">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="bg-emerald-100 p-2 rounded-full">
+                      <Crown className="h-6 w-6 text-emerald-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-medium">Seu plano atual: {planoAtual.nome}</h3>
+                      <p className="text-sm text-muted-foreground">Renovação automática em {planoAtual.dataRenovacao}</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm font-medium">Valor</p>
+                      <p className="text-2xl font-bold">{planoAtual.valor}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">Status</p>
+                      <Badge variant="success" className="mt-1 bg-emerald-100 text-emerald-700 hover:bg-emerald-200">Ativo</Badge>
+                    </div>
+                  </div>
+                </div>
+
+                <h3 className="font-medium text-lg mb-3">Recursos do seu plano</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 mb-6">
+                  <div className="flex items-center gap-2">
+                    <Check className="h-4 w-4 text-emerald-500" />
+                    <span>Baixar encartes</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="h-4 w-4 text-emerald-500" />
+                    <span>Logomarcas</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="h-4 w-4 text-emerald-500" />
+                    <span>Baixar cartazes</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="h-4 w-4 text-emerald-500" />
+                    <span>Baixar vídeos (em produção)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="h-4 w-4 text-emerald-500" />
+                    <span>Remover fundos</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="h-4 w-4 text-emerald-500" />
+                    <span>Acesso a formatos premium</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="h-4 w-4 text-emerald-500" />
+                    <span>Editar produtos</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <X className="h-4 w-4 text-red-500" />
+                    <span className="text-muted-foreground">Editar cabeçalho</span>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3 justify-end">
+                  <Button variant="outline" onClick={() => navigate('/planos')}>Ver todos os planos</Button>
+                  <Button onClick={() => navigate('/planos')}>Mudar de plano</Button>
                 </div>
               </CardContent>
             </Card>
