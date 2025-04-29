@@ -4,9 +4,12 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import AppLayout from '@/components/layout/AppLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Edit, Trash2, Copy, FileText, Upload, Image } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, Copy, FileText, Upload, Image, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 
 interface Template {
   id: number;
@@ -19,6 +22,7 @@ interface Template {
   dateCreated?: string;
   headerBackground?: string;
   logo?: string;
+  showBackground?: boolean;
 }
 
 const TemplateDetails = () => {
@@ -31,8 +35,10 @@ const TemplateDetails = () => {
   const [logo, setLogo] = useState<string | undefined>(undefined);
   const [isBackgroundDialogOpen, setIsBackgroundDialogOpen] = useState(false);
   const [isLogoDialogOpen, setIsLogoDialogOpen] = useState(false);
+  const [showBackground, setShowBackground] = useState(true);
   const backgroundInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
+  const [isBackgroundSettingsOpen, setIsBackgroundSettingsOpen] = useState(false);
 
   useEffect(() => {
     // Simulação de busca de dados
@@ -50,13 +56,15 @@ const TemplateDetails = () => {
         dimensions: { width: 800, height: 1200 },
         dateCreated: '01/01/2025',
         headerBackground: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb',
-        logo: undefined
+        logo: undefined,
+        showBackground: true
       };
       
       setTimeout(() => {
         setTemplate(templateData);
         setHeaderBackground(templateData.headerBackground);
         setLogo(templateData.logo);
+        setShowBackground(templateData.showBackground ?? true);
         setLoading(false);
       }, 500);
     };
@@ -114,6 +122,20 @@ const TemplateDetails = () => {
       });
     };
     reader.readAsDataURL(file);
+  };
+
+  const handleToggleBackground = (checked: boolean) => {
+    setShowBackground(checked);
+    if (template) {
+      setTemplate({
+        ...template,
+        showBackground: checked
+      });
+    }
+    toast({
+      title: checked ? "Fundo visível" : "Fundo oculto",
+      description: checked ? "O fundo do cabeçalho agora está visível." : "O fundo do cabeçalho agora está oculto.",
+    });
   };
 
   const handleCreateEncarte = () => {
@@ -192,7 +214,8 @@ const TemplateDetails = () => {
                 <div
                   className="aspect-[21/9] w-full overflow-hidden relative"
                   style={{
-                    backgroundImage: `url(${headerBackground || template.thumbnail})`,
+                    backgroundColor: !showBackground ? '#f8f9fa' : undefined,
+                    backgroundImage: showBackground ? `url(${headerBackground || template.thumbnail})` : 'none',
                     backgroundSize: 'cover',
                     backgroundPosition: 'center'
                   }}
@@ -235,16 +258,60 @@ const TemplateDetails = () => {
                   </div>
                 </div>
 
-                {/* Edit overlay for background */}
-                <div className="absolute top-2 left-2">
+                {/* Edit overlay for background with popover */}
+                <div className="absolute top-2 left-2 flex gap-2">
+                  <Popover open={isBackgroundSettingsOpen} onOpenChange={setIsBackgroundSettingsOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="bg-black/50 hover:bg-black/70 text-white"
+                      >
+                        <Image className="mr-1 h-4 w-4" />
+                        Editar Fundo
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-80">
+                      <div className="space-y-4 p-2">
+                        <h4 className="font-medium">Configurações do Fundo</h4>
+                        
+                        <div className="flex items-center space-x-2">
+                          <Switch 
+                            id="show-background" 
+                            checked={showBackground}
+                            onCheckedChange={handleToggleBackground}
+                          />
+                          <Label htmlFor="show-background">
+                            {showBackground ? 'Mostrar fundo' : 'Ocultar fundo'}
+                          </Label>
+                        </div>
+                        
+                        <Button 
+                          size="sm" 
+                          className="w-full"
+                          onClick={() => {
+                            setIsBackgroundDialogOpen(true);
+                            setIsBackgroundSettingsOpen(false);
+                          }}
+                        >
+                          <Upload className="mr-2 h-4 w-4" />
+                          Trocar imagem de fundo
+                        </Button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                  
                   <Button
                     variant="secondary"
                     size="sm"
                     className="bg-black/50 hover:bg-black/70 text-white"
-                    onClick={() => setIsBackgroundDialogOpen(true)}
+                    onClick={() => handleToggleBackground(!showBackground)}
                   >
-                    <Image className="mr-1 h-4 w-4" />
-                    Editar Fundo
+                    {showBackground ? (
+                      <><EyeOff className="mr-1 h-4 w-4" /> Ocultar</>
+                    ) : (
+                      <><Eye className="mr-1 h-4 w-4" /> Mostrar</>
+                    )}
                   </Button>
                 </div>
 
