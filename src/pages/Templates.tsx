@@ -1,11 +1,10 @@
-
 import React, { useState } from 'react';
 import AppLayout from '@/components/layout/AppLayout';
-import { Plus, Search, Filter } from 'lucide-react';
+import { Plus, Filter } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
+import { SearchInput } from '@/components/ui/search-input';
 
 // Tipos
 interface Template {
@@ -93,11 +92,9 @@ const Templates = () => {
 
         <div className="flex flex-col sm:flex-row items-center gap-4">
           <div className="relative w-full sm:w-80">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-            <Input
+            <SearchInput
               type="search"
               placeholder="Buscar templates..."
-              className="pl-10"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />

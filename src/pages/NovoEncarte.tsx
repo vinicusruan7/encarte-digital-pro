@@ -1,11 +1,12 @@
-
 import React, { useState } from 'react';
 import AppLayout from '@/components/layout/AppLayout';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LayoutGrid, Package2, ImageIcon, Phone, MapPin, CreditCard, Save, Eye } from 'lucide-react';
+import { LayoutGrid, Package2, ImageIcon, Phone, MapPin, CreditCard, Save, Eye, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { Input } from '@/components/ui/input';
+import { SearchInput } from '@/components/ui/search-input';
 
 // Template simulado selecionado
 const selectedTemplate = {
@@ -292,11 +293,9 @@ const NovoEncarte = () => {
                 <Card>
                   <div className="p-4">
                     <div className="relative mb-4">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                      <Input
+                      <SearchInput
                         type="search"
                         placeholder="Buscar produtos..."
-                        className="pl-10"
                       />
                     </div>
                     
