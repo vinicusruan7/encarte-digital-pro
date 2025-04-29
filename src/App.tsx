@@ -14,6 +14,7 @@ import NovoTemplate from "./pages/NovoTemplate";
 import Produtos from "./pages/Produtos";
 import NovoEncarte from "./pages/NovoEncarte";
 import BancoImagens from "./pages/BancoImagens";
+import Encartes from "./pages/Encartes";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -62,10 +63,9 @@ const App = () => {
             <Route path="/templates/edit/:id" element={<NovoTemplate />} />
             <Route path="/produtos" element={<Produtos />} />
             <Route path="/encartes/novo" element={<NovoEncarte />} />
-            {/* Updated route to use the BancoImagens component */}
             <Route path="/imagens" element={<BancoImagens />} />
-            {/* Remaining routes */}
-            <Route path="/encartes" element={<NotFound />} />
+            {/* Updated route to use the Encartes component */}
+            <Route path="/encartes" element={<Encartes />} />
             <Route path="/configuracoes" element={<NotFound />} />
             {/* Rota de fallback */}
             <Route path="*" element={<NotFound />} />
