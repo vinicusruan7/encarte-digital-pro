@@ -1,6 +1,7 @@
+
 import React, { useState } from 'react';
 import AppLayout from '@/components/layout/AppLayout';
-import { Plus, Filter } from 'lucide-react';
+import { Plus, Filter, Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
