@@ -58,6 +58,7 @@ const App = () => {
             <Route path="/templates" element={<Templates />} />
             <Route path="/templates/:id" element={<TemplateDetails />} />
             <Route path="/templates/novo" element={<NovoTemplate />} />
+            <Route path="/templates/edit/:id" element={<NovoTemplate />} />
             <Route path="/produtos" element={<Produtos />} />
             <Route path="/encartes/novo" element={<NovoEncarte />} />
             {/* Rotas adicionais para outras funcionalidades */}
