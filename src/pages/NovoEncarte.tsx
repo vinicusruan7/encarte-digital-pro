@@ -1,8 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import AppLayout from '@/components/layout/AppLayout';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LayoutGrid, Package2, ImageIcon, Phone, MapPin, CreditCard, Save, Eye, Search, PackagePlus, X, Download } from 'lucide-react';
+import { LayoutGrid, Package2, ImageIcon, Phone, MapPin, CreditCard, Save, Eye, Search, PackagePlus, X, Download, Link as LinkIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
@@ -16,7 +16,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogClose,
+  DialogFooter,
 } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 
 // Template simulado selecionado
 const selectedTemplate = {
@@ -80,12 +82,92 @@ const NovoEncarte = () => {
   const [previewOpen, setPreviewOpen] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
   
+  // Google Drive integration states
+  const [driveLink, setDriveLink] = useState('');
+  const [configDriveOpen, setConfigDriveOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [driveImages, setDriveImages] = useState<string[]>([]);
+  const [isLoadingImages, setIsLoadingImages] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [driveConfigured, setDriveConfigured] = useState(false);
+  
   // Formatar preço para BRL
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('pt-BR', { 
       style: 'currency', 
       currency: 'BRL' 
     }).format(price);
+  };
+
+  // Configurar Google Drive
+  const configureDrive = () => {
+    if (!driveLink.trim()) {
+      toast({
+        title: "Link inválido",
+        description: "Por favor, insira um link válido do Google Drive.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Validar o link do Google Drive (verificação básica)
+    if (!driveLink.includes('drive.google.com')) {
+      toast({
+        title: "Link inválido",
+        description: "O link fornecido não parece ser do Google Drive.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setDriveConfigured(true);
+    setConfigDriveOpen(false);
+    
+    toast({
+      title: "Google Drive configurado",
+      description: "O banco de imagens do Google Drive foi configurado com sucesso.",
+    });
+
+    // Simular busca inicial para popular o banco de imagens
+    searchDriveImages('');
+  };
+
+  // Função para buscar imagens do Google Drive (simulada)
+  const searchDriveImages = (term: string) => {
+    setIsLoadingImages(true);
+    
+    // Simulando uma busca de imagens no Google Drive
+    // Em uma implementação real, isso seria uma chamada à API do Google Drive
+    setTimeout(() => {
+      const mockImages = [
+        'https://images.unsplash.com/photo-1528825871115-3581a5387919', // banana
+        'https://images.unsplash.com/photo-1579613832125-5d34a13ffe2a', // banana
+        'https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6', // maçã
+        'https://images.unsplash.com/photo-1563289142-6725b48bb595', // frutas variadas
+        'https://images.unsplash.com/photo-1610830479222-91a39d7de6c3', // carne
+        'https://images.unsplash.com/photo-1615759546484-6a31e765b147', // arroz
+        'https://images.unsplash.com/photo-1566487097168-e91a4f38bee2', // bebidas
+        'https://images.unsplash.com/photo-1609951651556-5334e2706168', // leite
+      ];
+      
+      // Filtrar as imagens com base no termo de pesquisa
+      let filteredImages = mockImages;
+      
+      if (term.toLowerCase() === 'banana') {
+        filteredImages = mockImages.slice(0, 2);
+      } else if (term.toLowerCase() === 'maçã' || term.toLowerCase() === 'maca') {
+        filteredImages = mockImages.slice(2, 3);
+      } else if (term.toLowerCase() === 'carne') {
+        filteredImages = mockImages.slice(4, 5);
+      } else if (term.toLowerCase() === 'arroz') {
+        filteredImages = mockImages.slice(5, 6);
+      } else if (term.toLowerCase() === 'bebida' || term.toLowerCase() === 'refrigerante') {
+        filteredImages = mockImages.slice(6, 7);
+      }
+      
+      setDriveImages(filteredImages);
+      setIsLoadingImages(false);
+    }, 1000);
   };
 
   // Adicionar produto ao encarte
@@ -103,6 +185,30 @@ const NovoEncarte = () => {
         variant: "destructive"
       });
     }
+  };
+
+  // Adicionar produto personalizado com imagem selecionada
+  const addCustomProductWithImage = () => {
+    if (!selectedImage) {
+      toast({
+        title: "Nenhuma imagem selecionada",
+        description: "Por favor, selecione uma imagem para adicionar ao produto.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const newProduct = {
+      id: Date.now(),
+      nome: searchTerm || "Produto Personalizado",
+      preco: 0.00,
+      precoPromocional: null,
+      categoria: "Personalizado",
+      imagem: selectedImage
+    };
+
+    addProductToEncarte(newProduct);
+    setSelectedImage(null);
   };
 
   // Remover produto do encarte
@@ -326,6 +432,16 @@ const NovoEncarte = () => {
     );
   };
 
+  // Effect para buscar imagens quando o termo de busca mudar
+  useEffect(() => {
+    if (driveConfigured && searchTerm.length > 2) {
+      const timer = setTimeout(() => {
+        searchDriveImages(searchTerm);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [searchTerm, driveConfigured]);
+
   return (
     <AppLayout>
       <div className="space-y-6">
@@ -463,18 +579,80 @@ const NovoEncarte = () => {
               </TabsContent>
 
               <TabsContent value="imagens" className="mt-0">
-                <Card className="p-6">
-                  <div className="text-center py-8">
-                    <ImageIcon size={48} className="mx-auto text-gray-300" />
-                    <h3 className="mt-4 text-lg font-medium">Banco de Imagens</h3>
-                    <p className="text-gray-500 mt-1 max-w-md mx-auto">
-                      Aqui você pode gerenciar e selecionar imagens para adicionar ao seu encarte.
-                    </p>
-                    <Button className="mt-4">
-                      <ImageIcon size={16} className="mr-2" />
-                      Gerenciar Imagens
-                    </Button>
-                  </div>
+                <Card className="p-4">
+                  {!driveConfigured ? (
+                    <div className="text-center py-8">
+                      <ImageIcon size={48} className="mx-auto text-gray-300" />
+                      <h3 className="mt-4 text-lg font-medium">Banco de Imagens</h3>
+                      <p className="text-gray-500 mt-1 max-w-md mx-auto">
+                        Conecte ao Google Drive para acessar seu banco de imagens personalizado.
+                      </p>
+                      <Button className="mt-4" onClick={() => setConfigDriveOpen(true)}>
+                        <LinkIcon size={16} className="mr-2" />
+                        Configurar Google Drive
+                      </Button>
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="font-bold">Banco de Imagens</h3>
+                        <Button variant="outline" size="sm" onClick={() => setConfigDriveOpen(true)}>
+                          <LinkIcon size={14} className="mr-1" />
+                          Alterar Link
+                        </Button>
+                      </div>
+                      
+                      <div className="mb-4">
+                        <SearchInput
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          placeholder="Buscar imagens por nome..."
+                        />
+                      </div>
+                      
+                      {isLoadingImages ? (
+                        <div className="flex justify-center py-8">
+                          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-500"></div>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="grid grid-cols-2 gap-2 overflow-y-auto max-h-[400px]">
+                            {driveImages.map((image, index) => (
+                              <div 
+                                key={index}
+                                className={`border rounded-md overflow-hidden cursor-pointer aspect-square ${selectedImage === image ? 'ring-2 ring-primary-500' : 'hover:border-primary-300'}`}
+                                onClick={() => setSelectedImage(image)}
+                              >
+                                <img 
+                                  src={image} 
+                                  alt={`Imagem ${index + 1}`}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            ))}
+                            
+                            {driveImages.length === 0 && (
+                              <div className="col-span-2 py-8 text-center text-gray-500">
+                                <p>Nenhuma imagem encontrada para "{searchTerm}"</p>
+                                <p className="text-sm mt-2">Tente outros termos de busca</p>
+                              </div>
+                            )}
+                          </div>
+                          
+                          {selectedImage && (
+                            <div className="mt-4">
+                              <Button 
+                                className="w-full" 
+                                onClick={addCustomProductWithImage}
+                              >
+                                Adicionar Imagem ao Encarte
+                              </Button>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  )}
                 </Card>
               </TabsContent>
 
@@ -558,6 +736,38 @@ const NovoEncarte = () => {
               Baixar PDF
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Configuração do Google Drive */}
+      <Dialog open={configDriveOpen} onOpenChange={setConfigDriveOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Configurar Google Drive</DialogTitle>
+            <DialogDescription>
+              Insira o link de uma pasta compartilhada do Google Drive para usar como banco de imagens.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-4">
+            <Label htmlFor="drive-link" className="mb-2 block">Link da pasta compartilhada</Label>
+            <Input
+              id="drive-link"
+              placeholder="https://drive.google.com/drive/folders/..."
+              value={driveLink}
+              onChange={(e) => setDriveLink(e.target.value)}
+            />
+            <p className="text-xs text-gray-500 mt-2">
+              A pasta deve estar configurada com acesso público de visualização.
+            </p>
+          </div>
+          
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Cancelar</Button>
+            </DialogClose>
+            <Button onClick={configureDrive}>Confirmar</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </AppLayout>
