@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import AppLayout from '@/components/layout/AppLayout';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LayoutGrid, Package2, ImageIcon, Phone, MapPin, CreditCard, Save, Eye, Search, PackagePlus, X } from 'lucide-react';
+import { LayoutGrid, Package2, ImageIcon, Phone, MapPin, CreditCard, Save, Eye, Search, PackagePlus, X, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { SearchInput } from '@/components/ui/search-input';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 import {
   Dialog,
   DialogContent,
@@ -76,6 +78,7 @@ const NovoEncarte = () => {
   const [selectedProducts, setSelectedProducts] = useState<any[]>([]);
   const [showCells, setShowCells] = useState(true);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const previewRef = useRef<HTMLDivElement>(null);
   
   // Formatar preço para BRL
   const formatPrice = (price: number) => {
@@ -146,10 +149,57 @@ const NovoEncarte = () => {
     setPreviewOpen(true);
   };
 
+  // Função para gerar e baixar PDF do encarte
+  const downloadPDF = async () => {
+    if (!previewRef.current) return;
+    
+    toast({
+      title: "Gerando PDF",
+      description: "Aguarde enquanto o PDF é gerado...",
+    });
+    
+    try {
+      // Captura o conteúdo do encarte como uma imagem
+      const canvas = await html2canvas(previewRef.current, {
+        scale: 2, // Aumenta a qualidade
+        useCORS: true, // Permitir imagens de outras origens
+        logging: false,
+        allowTaint: true
+      });
+      
+      // Calcula as dimensões para o PDF (A4)
+      const imgWidth = 210; // mm - largura A4
+      const pageHeight = 297; // mm - altura A4
+      const imgHeight = canvas.height * imgWidth / canvas.width;
+      
+      // Cria o documento PDF
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      pdf.addImage(canvas.toDataURL('image/jpeg', 0.9), 'JPEG', 0, 0, imgWidth, imgHeight);
+      
+      // Baixa o PDF
+      pdf.save(`${encarteTitle.replace(/\s+/g, '_')}.pdf`);
+      
+      toast({
+        title: "PDF gerado com sucesso!",
+        description: "O download do seu encarte em PDF foi iniciado."
+      });
+    } catch (error) {
+      console.error('Erro ao gerar PDF:', error);
+      toast({
+        title: "Erro ao gerar PDF",
+        description: "Ocorreu um problema ao gerar o PDF. Tente novamente.",
+        variant: "destructive"
+      });
+    }
+  };
+
   // Renderiza o conteúdo do encarte (utilizado tanto na edição quanto na visualização)
   const renderEncarteContent = (isPreview = false) => {
     return (
-      <div className={`border ${showCells && !isPreview ? 'bg-gray-50 dark:bg-gray-800' : 'bg-white dark:bg-gray-900'} rounded-lg overflow-hidden`}>
+      <div 
+        ref={isPreview ? previewRef : null}
+        className={`border ${showCells && !isPreview ? 'bg-gray-50 dark:bg-gray-800' : 'bg-white dark:bg-gray-900'} rounded-lg overflow-hidden`}
+      >
         {/* Cabeçalho do Encarte */}
         <div className="bg-primary-500 text-white p-4">
           <h2 className="text-xl md:text-2xl font-bold text-center">{encarteTitle}</h2>
@@ -472,8 +522,8 @@ const NovoEncarte = () => {
             <Button variant="outline" onClick={() => setPreviewOpen(false)}>
               Fechar
             </Button>
-            <Button className="ml-2">
-              <Save size={16} className="mr-2" />
+            <Button className="ml-2" onClick={downloadPDF}>
+              <Download size={16} className="mr-2" />
               Baixar PDF
             </Button>
           </div>
