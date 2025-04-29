@@ -1,11 +1,12 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import AppLayout from '@/components/layout/AppLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Edit, Trash2, Copy, FileText } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, Copy, FileText, Upload, Image } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface Template {
   id: number;
@@ -16,6 +17,8 @@ interface Template {
   description?: string;
   dimensions?: { width: number; height: number };
   dateCreated?: string;
+  headerBackground?: string;
+  logo?: string;
 }
 
 const TemplateDetails = () => {
@@ -24,6 +27,12 @@ const TemplateDetails = () => {
   const { toast } = useToast();
   const [template, setTemplate] = useState<Template | null>(null);
   const [loading, setLoading] = useState(true);
+  const [headerBackground, setHeaderBackground] = useState<string | undefined>(undefined);
+  const [logo, setLogo] = useState<string | undefined>(undefined);
+  const [isBackgroundDialogOpen, setIsBackgroundDialogOpen] = useState(false);
+  const [isLogoDialogOpen, setIsLogoDialogOpen] = useState(false);
+  const backgroundInputRef = useRef<HTMLInputElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     // Simulação de busca de dados
@@ -39,17 +48,73 @@ const TemplateDetails = () => {
         lastUsed: '15/04/2025',
         description: 'Template para exibição das ofertas semanais da loja. Ideal para promoções relâmpago e divulgação de produtos em destaque.',
         dimensions: { width: 800, height: 1200 },
-        dateCreated: '01/01/2025'
+        dateCreated: '01/01/2025',
+        headerBackground: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb',
+        logo: undefined
       };
       
       setTimeout(() => {
         setTemplate(templateData);
+        setHeaderBackground(templateData.headerBackground);
+        setLogo(templateData.logo);
         setLoading(false);
       }, 500);
     };
 
     fetchTemplate();
   }, [id]);
+
+  const handleBackgroundUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      setHeaderBackground(result);
+      
+      // Update template object
+      if (template) {
+        setTemplate({
+          ...template,
+          headerBackground: result
+        });
+      }
+      
+      setIsBackgroundDialogOpen(false);
+      toast({
+        title: "Imagem de fundo alterada",
+        description: "O fundo do cabeçalho foi atualizado com sucesso.",
+      });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      setLogo(result);
+      
+      // Update template object
+      if (template) {
+        setTemplate({
+          ...template,
+          logo: result
+        });
+      }
+      
+      setIsLogoDialogOpen(false);
+      toast({
+        title: "Logo alterado",
+        description: "O logotipo foi atualizado com sucesso.",
+      });
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleCreateEncarte = () => {
     toast({
@@ -122,13 +187,81 @@ const TemplateDetails = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
             <Card>
-              <div className="aspect-video w-full overflow-hidden">
-                <img
-                  src={template.thumbnail}
-                  alt={template.name}
-                  className="w-full h-full object-cover"
-                />
+              {/* Template header preview with editable background and logo */}
+              <div className="relative">
+                <div
+                  className="aspect-[21/9] w-full overflow-hidden relative"
+                  style={{
+                    backgroundImage: `url(${headerBackground || template.thumbnail})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center'
+                  }}
+                >
+                  <div className="absolute inset-0 flex items-center p-4">
+                    {/* Left side - Image */}
+                    <div className="flex-shrink-0 w-1/3">
+                      <div className="w-full h-full flex items-center justify-center">
+                        <img
+                          src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158"
+                          alt=""
+                          className="w-full h-full object-cover rounded"
+                        />
+                      </div>
+                    </div>
+                    
+                    {/* Middle - Template title */}
+                    <div className="flex-grow text-white font-bold mx-4">
+                      <h3 className="text-2xl md:text-3xl lg:text-4xl uppercase drop-shadow-md">
+                        QUINTA
+                      </h3>
+                      <p className="text-lg md:text-xl lg:text-2xl uppercase text-red-500 font-extrabold drop-shadow-md">
+                        Filé
+                      </p>
+                    </div>
+                    
+                    {/* Right - Logo */}
+                    <div className="w-1/4 aspect-square flex items-center justify-center">
+                      <div className="w-full h-full bg-white rounded-lg shadow-md flex items-center justify-center overflow-hidden p-1">
+                        {logo ? (
+                          <img src={logo} alt="Logo" className="max-w-full max-h-full object-contain" />
+                        ) : (
+                          <div className="text-center text-gray-400">
+                            <Image className="w-8 h-8 mx-auto mb-1" />
+                            <p className="text-xs">Sem logo</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Edit overlay for background */}
+                <div className="absolute top-2 left-2">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="bg-black/50 hover:bg-black/70 text-white"
+                    onClick={() => setIsBackgroundDialogOpen(true)}
+                  >
+                    <Image className="mr-1 h-4 w-4" />
+                    Editar Fundo
+                  </Button>
+                </div>
+
+                {/* Edit overlay for logo */}
+                <div className="absolute top-2 right-2">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="bg-black/50 hover:bg-black/70 text-white"
+                    onClick={() => setIsLogoDialogOpen(true)}
+                  >
+                    <Upload className="mr-1 h-4 w-4" />
+                    Editar Logo
+                  </Button>
+                </div>
               </div>
+
               <CardContent className="p-6">
                 <h3 className="text-lg font-semibold mb-2">Descrição</h3>
                 <p className="text-gray-600 dark:text-gray-400 mb-4">
@@ -225,6 +358,109 @@ const TemplateDetails = () => {
           </div>
         </div>
       </div>
+
+      {/* Background upload dialog */}
+      <Dialog open={isBackgroundDialogOpen} onOpenChange={setIsBackgroundDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Alterar imagem de fundo</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-gray-500">
+              Selecione uma imagem para usar como fundo do cabeçalho do template.
+            </p>
+            <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-6">
+              <Image className="h-8 w-8 text-gray-400 mb-2" />
+              <p className="text-sm text-gray-500 mb-2">Arraste uma imagem ou clique para selecionar</p>
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                ref={backgroundInputRef}
+                onChange={handleBackgroundUpload}
+              />
+              <Button 
+                variant="outline" 
+                onClick={() => backgroundInputRef.current?.click()}
+              >
+                Escolher Imagem
+              </Button>
+            </div>
+            <div className="flex justify-center mt-4">
+              <Button 
+                variant="outline" 
+                onClick={() => setIsBackgroundDialogOpen(false)}
+              >
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Logo upload dialog */}
+      <Dialog open={isLogoDialogOpen} onOpenChange={setIsLogoDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Alterar logotipo</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-gray-500">
+              Selecione uma imagem para usar como logotipo no cabeçalho do template.
+            </p>
+            <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-6">
+              <Upload className="h-8 w-8 text-gray-400 mb-2" />
+              <p className="text-sm text-gray-500 mb-2">Arraste um logo ou clique para selecionar</p>
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                ref={logoInputRef}
+                onChange={handleLogoUpload}
+              />
+              <Button 
+                variant="outline" 
+                onClick={() => logoInputRef.current?.click()}
+              >
+                Escolher Logo
+              </Button>
+            </div>
+            {logo && (
+              <div className="flex flex-col items-center">
+                <p className="text-sm text-gray-500 mb-2">Logo atual:</p>
+                <div className="w-32 h-32 bg-white border rounded-md p-2 flex items-center justify-center">
+                  <img src={logo} alt="Logo atual" className="max-w-full max-h-full object-contain" />
+                </div>
+                <Button 
+                  variant="destructive" 
+                  size="sm" 
+                  className="mt-2"
+                  onClick={() => {
+                    setLogo(undefined);
+                    if (template) {
+                      setTemplate({...template, logo: undefined});
+                    }
+                    toast({
+                      title: "Logo removido",
+                      description: "O logotipo foi removido com sucesso.",
+                    });
+                  }}
+                >
+                  Remover logo
+                </Button>
+              </div>
+            )}
+            <div className="flex justify-center mt-4">
+              <Button 
+                variant="outline" 
+                onClick={() => setIsLogoDialogOpen(false)}
+              >
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 };
