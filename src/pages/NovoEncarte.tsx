@@ -1,8 +1,9 @@
+
 import React, { useState } from 'react';
 import AppLayout from '@/components/layout/AppLayout';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LayoutGrid, Package2, ImageIcon, Phone, MapPin, CreditCard, Save, Eye, Search } from 'lucide-react';
+import { LayoutGrid, Package2, ImageIcon, Phone, MapPin, CreditCard, Save, Eye, Search, PackagePlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
@@ -104,6 +105,26 @@ const NovoEncarte = () => {
     });
   };
 
+  // Função para preencher todo o encarte com produtos
+  const fillEncarteWithProducts = () => {
+    const totalCells = selectedTemplate.columns * selectedTemplate.rows;
+    const newSelectedProducts = [];
+    
+    // Preencher todas as células com produtos disponíveis, repetindo se necessário
+    for (let i = 0; i < totalCells; i++) {
+      // Pegar o produto da lista usando módulo para repetir quando necessário
+      const productIndex = i % availableProducts.length;
+      newSelectedProducts.push(availableProducts[productIndex]);
+    }
+    
+    setSelectedProducts(newSelectedProducts);
+    
+    toast({
+      title: "Encarte preenchido",
+      description: "Todas as células foram preenchidas com produtos.",
+    });
+  };
+
   // Salvar encarte (simulação)
   const saveEncarte = () => {
     toast({
@@ -162,18 +183,29 @@ const NovoEncarte = () => {
                   <h3 className="font-medium">Template: {selectedTemplate.name}</h3>
                   <p className="text-sm text-gray-500">Layout: {selectedTemplate.columns}x{selectedTemplate.rows}</p>
                 </div>
-                <label className="flex items-center cursor-pointer">
-                  <span className="mr-2 text-sm">Mostrar grid</span>
-                  <input 
-                    type="checkbox" 
-                    className="hidden" 
-                    checked={showCells} 
-                    onChange={() => setShowCells(!showCells)} 
-                  />
-                  <div className={`w-10 h-5 rounded-full transition-colors ${showCells ? 'bg-primary-500' : 'bg-gray-300'} relative`}>
-                    <div className={`w-4 h-4 rounded-full bg-white absolute top-0.5 transition-transform ${showCells ? 'translate-x-5' : 'translate-x-1'}`}></div>
-                  </div>
-                </label>
+                <div className="flex items-center gap-4">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={fillEncarteWithProducts}
+                    className="flex items-center gap-1"
+                  >
+                    <PackagePlus size={16} />
+                    <span>Preencher Encarte</span>
+                  </Button>
+                  <label className="flex items-center cursor-pointer">
+                    <span className="mr-2 text-sm">Mostrar grid</span>
+                    <input 
+                      type="checkbox" 
+                      className="hidden" 
+                      checked={showCells} 
+                      onChange={() => setShowCells(!showCells)} 
+                    />
+                    <div className={`w-10 h-5 rounded-full transition-colors ${showCells ? 'bg-primary-500' : 'bg-gray-300'} relative`}>
+                      <div className={`w-4 h-4 rounded-full bg-white absolute top-0.5 transition-transform ${showCells ? 'translate-x-5' : 'translate-x-1'}`}></div>
+                    </div>
+                  </label>
+                </div>
               </div>
 
               {/* Área de montagem do encarte */}
