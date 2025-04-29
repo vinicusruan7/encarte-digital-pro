@@ -1,13 +1,20 @@
-
 import React, { useState } from 'react';
 import AppLayout from '@/components/layout/AppLayout';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LayoutGrid, Package2, ImageIcon, Phone, MapPin, CreditCard, Save, Eye, Search, PackagePlus } from 'lucide-react';
+import { LayoutGrid, Package2, ImageIcon, Phone, MapPin, CreditCard, Save, Eye, Search, PackagePlus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { SearchInput } from '@/components/ui/search-input';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogClose,
+} from "@/components/ui/dialog";
 
 // Template simulado selecionado
 const selectedTemplate = {
@@ -68,6 +75,7 @@ const NovoEncarte = () => {
   const [encarteTitle, setEncarteTitle] = useState('Ofertas da Semana');
   const [selectedProducts, setSelectedProducts] = useState<any[]>([]);
   const [showCells, setShowCells] = useState(true);
+  const [previewOpen, setPreviewOpen] = useState(false);
   
   // Formatar preço para BRL
   const formatPrice = (price: number) => {
@@ -133,12 +141,108 @@ const NovoEncarte = () => {
     });
   };
 
-  // Visualizar encarte (simulação)
+  // Visualizar encarte
   const previewEncarte = () => {
-    toast({
-      title: "Visualização",
-      description: "Em uma versão real, uma previeww do encarte seria aberta.",
-    });
+    setPreviewOpen(true);
+  };
+
+  // Renderiza o conteúdo do encarte (utilizado tanto na edição quanto na visualização)
+  const renderEncarteContent = (isPreview = false) => {
+    return (
+      <div className={`border ${showCells && !isPreview ? 'bg-gray-50 dark:bg-gray-800' : 'bg-white dark:bg-gray-900'} rounded-lg overflow-hidden`}>
+        {/* Cabeçalho do Encarte */}
+        <div className="bg-primary-500 text-white p-4">
+          <h2 className="text-xl md:text-2xl font-bold text-center">{encarteTitle}</h2>
+          <p className="text-center text-sm md:text-base">{storeInfo.nome}</p>
+        </div>
+
+        {/* Área de Produtos */}
+        <div 
+          className={`grid ${showCells && !isPreview ? 'gap-1 p-1' : 'gap-0'}`}
+          style={{
+            gridTemplateColumns: `repeat(${selectedTemplate.columns}, 1fr)`,
+            gridTemplateRows: `repeat(${selectedTemplate.rows}, 1fr)`
+          }}
+        >
+          {/* Criando células vazias baseadas no template */}
+          {Array(selectedTemplate.columns * selectedTemplate.rows).fill(null).map((_, index) => {
+            const product = selectedProducts[index];
+            
+            return (
+              <div 
+                key={index} 
+                className={`aspect-square ${
+                  showCells && !isPreview ? 'border border-dashed border-gray-300 dark:border-gray-600' : ''
+                } relative overflow-hidden`}
+              >
+                {product ? (
+                  <div className="h-full p-2 flex flex-col">
+                    <div className="flex-1 relative overflow-hidden">
+                      <img 
+                        src={product.imagem} 
+                        alt={product.nome}
+                        className="w-full h-full object-cover"
+                      />
+                      {!isPreview && (
+                        <button 
+                          className="absolute top-1 right-1 bg-white/80 dark:bg-black/80 rounded-full p-1 hover:bg-red-100 dark:hover:bg-red-900/50 z-10"
+                          onClick={() => removeProductFromEncarte(index)}
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                    <div className="mt-1 text-center">
+                      <p className="text-xs font-medium truncate">{product.nome}</p>
+                      <div className="flex justify-center items-baseline gap-1 mt-0.5">
+                        {product.precoPromocional ? (
+                          <>
+                            <span className="font-bold text-xs">{formatPrice(product.precoPromocional)}</span>
+                            <span className="text-[10px] text-gray-500 line-through">{formatPrice(product.preco)}</span>
+                          </>
+                        ) : (
+                          <span className="font-bold text-xs">{formatPrice(product.preco)}</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="h-full flex items-center justify-center bg-gray-100/50 dark:bg-gray-800/50 text-gray-400">
+                    <div className="text-center text-xs">
+                      {showCells && !isPreview && <span>Célula vazia</span>}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Rodapé do Encarte */}
+        <div className="bg-gray-100 dark:bg-gray-800 p-4 text-xs md:text-sm">
+          <div className="flex flex-col sm:flex-row justify-between gap-4">
+            <div className="flex items-center">
+              <Phone size={16} className="mr-2 text-primary-500" />
+              <span>{storeInfo.telefone}</span>
+            </div>
+            <div className="flex items-center">
+              <MapPin size={16} className="mr-2 text-primary-500" />
+              <span>{storeInfo.endereco}</span>
+            </div>
+            <div className="flex items-center">
+              <CreditCard size={16} className="mr-2 text-primary-500" />
+              <span>{storeInfo.formasPagamento.join(', ')}</span>
+            </div>
+          </div>
+          <div className="mt-2 text-center text-gray-500">
+            <p>{storeInfo.horarioFuncionamento}</p>
+            <p className="mt-1">Ofertas válidas enquanto durarem os estoques.</p>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -209,97 +313,7 @@ const NovoEncarte = () => {
               </div>
 
               {/* Área de montagem do encarte */}
-              <div className={`border ${showCells ? 'bg-gray-50 dark:bg-gray-800' : 'bg-white dark:bg-gray-900'} rounded-lg overflow-hidden`}>
-                {/* Cabeçalho do Encarte */}
-                <div className="bg-primary-500 text-white p-4">
-                  <h2 className="text-xl md:text-2xl font-bold text-center">{encarteTitle}</h2>
-                  <p className="text-center text-sm md:text-base">{storeInfo.nome}</p>
-                </div>
-
-                {/* Área de Produtos */}
-                <div 
-                  className={`grid ${showCells ? 'gap-1 p-1' : 'gap-0'}`}
-                  style={{
-                    gridTemplateColumns: `repeat(${selectedTemplate.columns}, 1fr)`,
-                    gridTemplateRows: `repeat(${selectedTemplate.rows}, 1fr)`
-                  }}
-                >
-                  {/* Criando células vazias baseadas no template */}
-                  {Array(selectedTemplate.columns * selectedTemplate.rows).fill(null).map((_, index) => {
-                    const product = selectedProducts[index];
-                    
-                    return (
-                      <div 
-                        key={index} 
-                        className={`aspect-square ${
-                          showCells ? 'border border-dashed border-gray-300 dark:border-gray-600' : ''
-                        } relative overflow-hidden`}
-                      >
-                        {product ? (
-                          <div className="h-full p-2 flex flex-col">
-                            <div className="flex-1 relative overflow-hidden">
-                              <img 
-                                src={product.imagem} 
-                                alt={product.nome}
-                                className="w-full h-full object-cover"
-                              />
-                              <button 
-                                className="absolute top-1 right-1 bg-white/80 dark:bg-black/80 rounded-full p-1 hover:bg-red-100 dark:hover:bg-red-900/50 z-10"
-                                onClick={() => removeProductFromEncarte(index)}
-                              >
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                  <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                </svg>
-                              </button>
-                            </div>
-                            <div className="mt-1 text-center">
-                              <p className="text-xs font-medium truncate">{product.nome}</p>
-                              <div className="flex justify-center items-baseline gap-1 mt-0.5">
-                                {product.precoPromocional ? (
-                                  <>
-                                    <span className="font-bold text-xs">{formatPrice(product.precoPromocional)}</span>
-                                    <span className="text-[10px] text-gray-500 line-through">{formatPrice(product.preco)}</span>
-                                  </>
-                                ) : (
-                                  <span className="font-bold text-xs">{formatPrice(product.preco)}</span>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="h-full flex items-center justify-center bg-gray-100/50 dark:bg-gray-800/50 text-gray-400">
-                            <div className="text-center text-xs">
-                              {showCells && <span>Célula vazia</span>}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Rodapé do Encarte */}
-                <div className="bg-gray-100 dark:bg-gray-800 p-4 text-xs md:text-sm">
-                  <div className="flex flex-col sm:flex-row justify-between gap-4">
-                    <div className="flex items-center">
-                      <Phone size={16} className="mr-2 text-primary-500" />
-                      <span>{storeInfo.telefone}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <MapPin size={16} className="mr-2 text-primary-500" />
-                      <span>{storeInfo.endereco}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <CreditCard size={16} className="mr-2 text-primary-500" />
-                      <span>{storeInfo.formasPagamento.join(', ')}</span>
-                    </div>
-                  </div>
-                  <div className="mt-2 text-center text-gray-500">
-                    <p>{storeInfo.horarioFuncionamento}</p>
-                    <p className="mt-1">Ofertas válidas enquanto durarem os estoques.</p>
-                  </div>
-                </div>
-              </div>
+              {renderEncarteContent()}
             </Card>
           </div>
 
@@ -436,6 +450,35 @@ const NovoEncarte = () => {
           </div>
         </div>
       </div>
+
+      {/* Modal de Visualização do Encarte */}
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DialogContent className="sm:max-w-[90%] max-h-[90vh] overflow-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center justify-between">
+              <span>Visualização do Encarte</span>
+              <DialogClose className="rounded-full p-2 hover:bg-gray-200 dark:hover:bg-gray-800">
+                <X size={18} />
+              </DialogClose>
+            </DialogTitle>
+            <DialogDescription>
+              Veja como seu encarte ficará para os clientes
+            </DialogDescription>
+          </DialogHeader>
+          <div className="p-4">
+            {renderEncarteContent(true)}
+          </div>
+          <div className="mt-4 flex justify-end">
+            <Button variant="outline" onClick={() => setPreviewOpen(false)}>
+              Fechar
+            </Button>
+            <Button className="ml-2">
+              <Save size={16} className="mr-2" />
+              Baixar PDF
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 };
