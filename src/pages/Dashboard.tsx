@@ -1,4 +1,3 @@
-
 import React from 'react';
 import AppLayout from '@/components/layout/AppLayout';
 import { LayoutGrid, Package2, FileText, TrendingUp, Bell } from 'lucide-react';
