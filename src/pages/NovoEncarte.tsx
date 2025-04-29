@@ -170,7 +170,7 @@ const NovoEncarte = () => {
         windowHeight: previewRef.current.scrollHeight, // Altura da janela para captura
         onclone: (clonedDoc) => {
           // Garante que o elemento clonado seja visível para captura completa
-          const clonedElement = clonedDoc.querySelector('[data-preview-clone]');
+          const clonedElement = clonedDoc.querySelector('[data-preview-clone]') as HTMLElement;
           if (clonedElement) {
             clonedElement.style.height = 'auto';
             clonedElement.style.overflow = 'visible';
